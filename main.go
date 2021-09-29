@@ -36,11 +36,11 @@ func main() {
 	//fmt.Println(string(body))
 
 	//Vypis delay
-	var result spoj
+	var result []spoj
 	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
-	for _, rec := range result.Label {
-		fmt.Println(rec)
+	for _, rec := range result {
+		fmt.Println(rec.Delay)
 	}
 }
