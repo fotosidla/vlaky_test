@@ -24,20 +24,29 @@ type spoj struct {
 	} `json:"connectionStations"`
 }
 
-func main() {
-	url := "https://brn-ybus-pubapi.sa.cz/restapi/routes/372825000/departures"
+// Načte data z URL -> příjmá URL string a vrací string body (data v body proměnné)
+func loadData(url string) (content string) {
 	resp, err := http.Get(url)
+	defer resp.Body.Close()
+	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Println("No Response")
 	}
-	defer resp.Body.Close()
-	body, err := ioutil.ReadAll(resp.Body)
+	return string(body)
+}
+
+func main() {
+	url := "https://brn-ybus-pubapi.sa.cz/restapi/routes/372825000/departures"
+
 	//vypis všeho v json
 	//fmt.Println(string(body))
 
-	//Vypis delay
+	//Vypis delay ->
+	// POZOR v zdrojovem JSON se nachazi pole protože
+	// v úvodu file je [] pokud by tam bylo {} jedná se o objekt
+	// Proto musí být var result spoj s []!!!!!!
 	var result []spoj
-	if err := json.Unmarshal(body, &result); err != nil { // Parse []byte to the go struct pointer
+	if err := json.Unmarshal([]byte(loadData(url)), &result); err != nil { // Parse []byte to the go struct pointer
 		fmt.Println("Can not unmarshal JSON")
 	}
 	for _, rec := range result {
