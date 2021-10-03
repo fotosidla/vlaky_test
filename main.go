@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -40,17 +39,22 @@ func loadData(url string) (content string) {
 }
 
 func getDelay(data string, trnNum string) int {
-	var spoje []spoj
-	var delay int
-	if err := json.Unmarshal(([]byte(data)), &spoje); err != nil { // Parse []byte to the go struct pointer
-		fmt.Println("Can not unmarshal JSON")
-	}
-	for _, data := range spoje {
-		if gjson.Get(data.Number) == trnNum {
-			delay = gjson.Get(data.Delay, "delay")
+	var actDel int
+	var number = gjson.Get(data, "#.number") // Načte čísla vlaků z JSON
+	var delay = gjson.Get(data, "#.delay")   // Načte zpoždění z JSON
+	// Projde celý string čísel vlaků a hledá string odpovídající trnNum
+	// TODO: pokud nepouziju proměnnou item mam problem protoze ji deklaruji ale nepouzivam!
+	for i, item := range number.Array() {
+		// Prasárna ale nevím jak jinak -> ukládám string na pozici I do proměnné actNum
+		actNum := number.Array()[i].Str
+		if actNum == trnNum {
+			fmt.Println(actNum, item)
+			// Prasárna 2 ukládám delay na pozici i do proměnné actDel
+			actDel := delay.Array()[i].Int()
+			fmt.Println(actDel, item)
 		}
 	}
-	return delay
+	return int(actDel)
 }
 
 // func getTrNum(w http.ResponseWriter, r *http.Request) {
@@ -77,10 +81,21 @@ func main() {
 	// v úvodu file je [] pokud by tam bylo {} jedná se o objekt
 	// Proto musí být var result spoj s []!!!!!!
 	var dataLoaded = loadData(url)
-	trnNum := "1030"
-	var vysledek int
-	getDelay(dataLoaded, trnNum)
-	fmt.Println(vysledek)
+	var trnNum string = "1031"
+
+	println(getDelay(dataLoaded, trnNum))
+	// tmp := gjson.Get(dataLoaded, "#.number")
+	// tmp1 := gjson.Get(dataLoaded, "#.delay")
+	// tmp.ForEach(func(key, value gjson.Result) bool {
+	// 	tmp1 := value.Str
+	// 	if tmp1 == trnNum {
+
+	// 	}
+
+	// 	return true
+	// })
+	//fmt.Println(tmp)
+	//fmt.Println(tmp1)
 	//VYPIŠ DELAY
 	// for _, del := range result {
 	// 	fmt.Println(del.Delay)
