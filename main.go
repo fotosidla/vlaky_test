@@ -106,8 +106,8 @@ func main() {
 	var delay int
 
 	delay = getDelay(dataLoaded, trnNum)
-	delayAlt := getDelayAlt(dataLoaded, trnNum)
 	fmt.Printf("Vraceno: %d, VracenoAlt: %d", delay, delayAlt)
+	fmt.Printf("Vraceno: %d, VracenoAlt: %d", delay, getDelayAlt(dataLoaded, trnNum))
 
 	// tmp := gjson.Get(dataLoaded, "#.number")
 	// tmp1 := gjson.Get(dataLoaded, "#.delay")
