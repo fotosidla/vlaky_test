@@ -38,8 +38,8 @@ func loadData(url string) (content string) {
 	return string(body)
 }
 
-func getDelay(data string, trnNum string) int {
-	var actDel int
+func getDelay(data string, trnNum string) (actDel int) {
+
 	var number = gjson.Get(data, "#.number") // Načte čísla vlaků z JSON
 	var delay = gjson.Get(data, "#.delay")   // Načte zpoždění z JSON
 	// Projde celý string čísel vlaků a hledá string odpovídající trnNum
@@ -48,13 +48,16 @@ func getDelay(data string, trnNum string) int {
 		// Prasárna ale nevím jak jinak -> ukládám string na pozici I do proměnné actNum
 		actNum := number.Array()[i].Str
 		if actNum == trnNum {
-			fmt.Println(actNum, item)
+			//fmt.Println(actNum, item)
 			// Prasárna 2 ukládám delay na pozici i do proměnné actDel
 			actDel := delay.Array()[i].Int()
 			fmt.Println(actDel, item)
+			return int(actDel)
+
 		}
+
 	}
-	return int(actDel)
+	return
 }
 
 // func getTrNum(w http.ResponseWriter, r *http.Request) {
@@ -81,9 +84,12 @@ func main() {
 	// v úvodu file je [] pokud by tam bylo {} jedná se o objekt
 	// Proto musí být var result spoj s []!!!!!!
 	var dataLoaded = loadData(url)
-	var trnNum string = "1031"
+	var trnNum string = "1002"
+	var delay int
 
-	println(getDelay(dataLoaded, trnNum))
+	delay = getDelay(dataLoaded, trnNum)
+	println("Vraceno", delay)
+
 	// tmp := gjson.Get(dataLoaded, "#.number")
 	// tmp1 := gjson.Get(dataLoaded, "#.delay")
 	// tmp.ForEach(func(key, value gjson.Result) bool {
