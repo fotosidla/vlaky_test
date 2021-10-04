@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -60,6 +61,23 @@ func getDelay(data string, trnNum string) (actDel int) {
 	return
 }
 
+func getDelayAlt(data string, trnNum string) (actDel int) {
+	var res []struct {
+		Number string `json:"number"`
+		Delay  int `json:"delay"`
+	}
+	err := json.Unmarshal([]byte(data), &res)
+	if err != nil {
+		panic(err)
+	}
+	for _, item := range res {
+		if item.Number == trnNum {
+			return item.Delay
+		}
+	}
+	return
+}
+
 // func getTrNum(w http.ResponseWriter, r *http.Request) {
 // 	// Určuji typ imputu na json
 // 	w.Header().Set("Content-Type", "aplication/json")
@@ -88,7 +106,7 @@ func main() {
 	var delay int
 
 	delay = getDelay(dataLoaded, trnNum)
-	println("Vraceno", delay)
+	fmt.Printf("Vraceno: %d, VracenoAlt: %d", delay, getDelayAlt(dataLoaded, trnNum))
 
 	// tmp := gjson.Get(dataLoaded, "#.number")
 	// tmp1 := gjson.Get(dataLoaded, "#.delay")
