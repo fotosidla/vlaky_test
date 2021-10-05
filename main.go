@@ -4,9 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
 	"net/http"
+	"strconv"
 	"time"
 
+	"github.com/gorilla/mux"
 	"github.com/tidwall/gjson"
 )
 
@@ -25,6 +28,14 @@ type spoj struct {
 		DepartingStation bool        `json:"departingStation"`
 	} `json:"connectionStations"`
 }
+
+type delay struct {
+	Delay string `json:"delay"`
+}
+
+const (
+	depUrl = "https://brn-ybus-pubapi.sa.cz/restapi/routes/372825000/departures"
+)
 
 // Načte data z URL -> příjmá URL string a vrací string body (data v body proměnné)
 func loadData(url string) (content string) {
@@ -64,7 +75,7 @@ func getDelay(data string, trnNum string) (actDel int) {
 func getDelayAlt(data string, trnNum string) (actDel int) {
 	var res []struct {
 		Number string `json:"number"`
-		Delay  int `json:"delay"`
+		Delay  int    `json:"delay"`
 	}
 	err := json.Unmarshal([]byte(data), &res)
 	if err != nil {
@@ -78,35 +89,32 @@ func getDelayAlt(data string, trnNum string) (actDel int) {
 	return
 }
 
-// func getTrNum(w http.ResponseWriter, r *http.Request) {
-// 	// Určuji typ imputu na json
-// 	w.Header().Set("Content-Type", "aplication/json")
-// 	var test []spoj
-// 	params := mux.Vars(r)
-// 	// Prohledání knížek cyklem FOR
-// 	for _, item := range test {
-// 		if item.Number == params["Number"] {
-// 			json.NewEncoder(w).Encode(test)
-// 			return
-// 		}
+func getTrNum(w http.ResponseWriter, r *http.Request) {
 
-// 	}
-// 	json.NewEncoder(w).Encode(&spoj{})
-// }
+	// Určuji typ imputu na json
+	w.Header().Set("Content-Type", "aplication/json")
+	params := mux.Vars(r)
+	var dataLoaded = loadData(depUrl)
+	resource := getDelayAlt(dataLoaded, params["Number"])
+	//fmt.Printf(strconv.Itoa(resource))
+	var d delay
+	d.Delay = strconv.Itoa(resource)
+	json.NewEncoder(w).Encode(d)
+}
 
 func main() {
-	//router := mux.NewRouter()
-	url := "https://brn-ybus-pubapi.sa.cz/restapi/routes/372825000/departures"
+	router := mux.NewRouter()
+	//url := "https://brn-ybus-pubapi.sa.cz/restapi/routes/372825000/departures"
 	//Vypis delay ->
 	// POZOR v zdrojovem JSON se nachazi pole protože
 	// v úvodu file je [] pokud by tam bylo {} jedná se o objekt
 	// Proto musí být var result spoj s []!!!!!!
-	var dataLoaded = loadData(url)
-	var trnNum string = "1002"
-	var delay int
+	//var dataLoaded = loadData(depUrl)
+	//var trnNum string = "1002"
+	//var delay int
 
-	delay = getDelay(dataLoaded, trnNum)
-	fmt.Printf("Vraceno: %d, VracenoAlt: %d", delay, getDelayAlt(dataLoaded, trnNum))
+	//delay = getDelay(dataLoaded, trnNum)
+	//fmt.Printf("Vraceno: %d, VracenoAlt: %d", delay, getDelayAlt(dataLoaded, trnNum))
 
 	// tmp := gjson.Get(dataLoaded, "#.number")
 	// tmp1 := gjson.Get(dataLoaded, "#.delay")
@@ -130,6 +138,6 @@ func main() {
 	// 	fmt.Println(trN.Number)
 	// }
 
-	//router.HandleFunc("/api/train/{Number}", getTrNum).Methods("GET")
-	//log.Fatal(http.ListenAndServe(":8000", router))
+	router.HandleFunc("/api/train/{Number}", getTrNum).Methods("GET")
+	log.Fatal(http.ListenAndServe(":8000", router))
 }
