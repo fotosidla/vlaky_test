@@ -1,14 +1,13 @@
 FROM golang:latest
-
-RUN mkdir /build
-WORKDIR /build
-
+RUN mkdir /app
+ADD . /app
+WORKDIR /app
 RUN export GO111MODULE=on
 RUN go get github.com/fotosidla/vlaky_test/
-RUN cd /build && git clone https://github.com/fotosidla/vlaky_test.git
+RUN cd /app && git clone https://github.com/fotosidla/vlaky_test.git
 
-RUN cd /build/vlaky_test/ && go build
+RUN cd /app/vlaky_test/ && go build main.go
 
-EXPOSE 8080
+EXPOSE 8000
 
-ENTRYPOINT [ "/build/vlaky_test/main" ]
+CMD [ "vlaky_test", "run" ]
